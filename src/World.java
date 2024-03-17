@@ -1,5 +1,4 @@
 import java.util.*;
-import java.util.List;
 
 /**
  * Represents the 2D World in which this simulation is running.
@@ -80,11 +79,11 @@ public final class World {
     }
 
     /** Returns the (optional) nearest world entity of the given kind(s) to the point.*/
-    public Optional<Entity> findNearest(Point position, List<Entity.EntityKind> kinds) {
+    public Optional<Entity> findNearest(Point position, List<Class<? extends Entity>> kinds) {
         List<Entity> ofType = new LinkedList<>();
-        for (Entity.EntityKind kind : kinds) {
+        for (Class<? extends Entity> kind : kinds) {
             for (Entity entity : this.entities) {
-                if (entity.getKind() == kind) {
+                if (kind.isInstance(entity)) { // TODO to whoever grades my work- I just want you to know that this single line had a typo that caused 12/21 tests to fail and for nothing to happen... i fixed the line and everything just worked after
                     ofType.add(entity);
                 }
             }

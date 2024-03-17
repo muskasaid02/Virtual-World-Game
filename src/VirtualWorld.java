@@ -1,6 +1,7 @@
-import java.util.*;
+import processing.core.PApplet;
 
-import processing.core.*;
+import java.util.List;
+import java.util.Optional;
 
 public final class VirtualWorld extends PApplet {
     public static final int TILE_WIDTH = 32;
@@ -98,7 +99,9 @@ public final class VirtualWorld extends PApplet {
     /** Called to start all entity's actions and behaviors when the program starts. */
     public void scheduleActions(World world, EventScheduler scheduler, ImageLibrary imageLibrary) {
         for (Entity entity : world.getEntities()) {
-            entity.scheduleActions(scheduler, world, imageLibrary);
+            if (entity instanceof Actions) {
+                ((Actions)entity).scheduleActions(scheduler, world, imageLibrary);
+            }
         }
     }
 
@@ -123,10 +126,31 @@ public final class VirtualWorld extends PApplet {
         Optional<Entity> entityOptional = world.getOccupant(pressed);
         if (entityOptional.isPresent()) {
             Entity entity = entityOptional.get();
+            if (entity.getClass() == Fairy.class){
+                BadDude badDude = new BadDude(BadDude.BAD_DUDE_KEY, entity.getPosition(), imageLibrary.get(BadDude.BAD_DUDE_KEY), .5, .5, true);
+                world.removeEntity(scheduler, entity);
+                world.addEntity(badDude);
+                badDude.scheduleActions(scheduler, world, imageLibrary);
+            } else if (entity.getClass() == Water.class) {
+                Point p = entity.getPosition();
+                world.setBackgroundCell(p, new Background("water", imageLibrary.get(Water.WATER_KEY), 0));
+                world.removeEntity(scheduler, entity);
+                WaterTrail splash = new WaterTrail(WaterTrail.WATER_TRAIL_KEY, p, imageLibrary.get(WaterTrail.WATER_TRAIL_KEY));
+                world.addEntity(splash);
+                splash.scheduleActions(scheduler, world, imageLibrary);
+            }
 
             if (entity.log() != null) {
                 System.out.println(entity.log());
             }
+        } else {
+            Car car = new Car(Car.CAR_KEY, pressed, imageLibrary.get(Car.CAR_KEY), .4, .4);
+            world.addEntity(car);
+            car.scheduleActions(scheduler, world, imageLibrary);
+            world.setBackgroundCell(pressed, new Background("road", imageLibrary.get("road"), 0));
+            long unused = PathingStrategy.CARDINAL_NEIGHBORS.apply(pressed).filter(world::inBounds).peek(x -> {
+                world.setBackgroundCell(x, new Background("road", imageLibrary.get("road"), 0));
+            }).count();
         }
     }
 

@@ -49,7 +49,7 @@ public class Car extends Actions implements Movable, Transformable{
         List<Class<? extends Entity>> potentialTargets;
 
         if (full) {
-            potentialTargets = List.of(Mushroom.class);
+            potentialTargets = List.of(BadDude.class);
         } else if (cooldown > 0) {
             cooldown--;
             potentialTargets = List.of(House.class);
